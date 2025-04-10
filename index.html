@@ -177,12 +177,43 @@
     questions.forEach((q, i) => {
       const div = document.createElement("div");
       div.className = "question";
-      div.innerHTML = ``
+      div.innerHTML = `
         <p>${i + 1}. ${q.text}</p>
         <div class="options">
           ${labels.map((label, index) => `
             <label><input type="radio" name="q${i}" value="${index + 1}" required> ${label}</label>
           `).join('')}
         </div>
-      `; 
-      
+      `;
+      questionContainer.appendChild(div);
+    });
+
+    // 進捗バーの更新
+    const updateProgress = (currentQuestion) => {
+      const progress = (currentQuestion / questions.length) * 100;
+      document.querySelector("#progressBar div").style.width = progress + "%";
+    };
+
+    // 診断ロジック
+    document.getElementById("quizForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const score = { EI: 0, SN: 0, TF: 0, JP: 0 };
+      questions.forEach((q, i) => {
+        const val = parseInt(document.querySelector(`input[name=q${i}]:checked`).value);
+        const adjusted = q.reverse ? 6 - val : val;
+        score[q.axis] += adjusted;
+      });
+
+      let type = '';
+      const axisScores = Object.keys(score).map(axis => {
+        return score[axis] > 0 ? axisTypes[axis][0] : axisTypes[axis][1];
+      });
+
+      type = axisScores.join('');
+
+      document.getElementById("result").innerText = `${results[type].type}\n\n${results[type].description}`;
+    });
+  </script>
+</body>
+</html>
