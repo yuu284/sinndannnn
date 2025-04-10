@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>8タイプ診断</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #fff5f8;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    .container {
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: #ffffff;
+      border-radius: 1.5rem;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #ff66a5;
+      font-size: 2rem;
+    }
+    .question {
+      display: inline-block;
+      width: 100%;
+      background: #fff;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin: 1rem 0;
+    }
+    .question p {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    .options label {
+      display: block;
+      margin: 0.5rem 0;
+    }
+    button {
+      margin-top: 2rem;
+      padding: 0.75rem 1.5rem;
+      background-color: #ff66a5;
+      border: none;
+      border-radius: 1rem;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 2rem;
+      padding: 1rem;
+      background-color: #ffe4ec;
+      border-radius: 1rem;
+    }
+
+    /* レスポンシブデザイン */
+    @media screen and (max-width: 600px) {
+      .container {
+        width: 90%;
+        padding: 1rem;
+      }
+
+      button {
+        width: 100%;
+        padding: 1rem;
+      }
+
+      .question {
+        padding: 0.5rem;
+      }
+    }
+
+    /* 進捗バー */
+    #progressBar {
+      width: 100%;
+      height: 20px;
+      margin-top: 1rem;
+      background-color: #e0e0e0;
+      border-radius: 10px;
+    }
+    #progressBar div {
+      height: 100%;
+      background-color: #ff66a5;
+      border-radius: 10px;
+      width: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>8タイプ診断</h1>
+    <form id="quizForm">
+      <div id="questions"></div>
+      <div id="progressBar"><div></div></div>
+      <button type="submit">診断する</button>
+    </form>
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    const questions = [
+      { text: "人と話すのが楽しい", axis: "EI" },
+      { text: "1人の時間よりも誰かと一緒に過ごしたい", axis: "EI" },
+      { text: "初対面の人とも気軽に話せる", axis: "EI" },
+      { text: "予定がない日は誰かと遊ぶ予定を入れたくなる", axis: "EI" },
+      { text: "事実やデータを重視する", axis: "SN" },
+      { text: "空想や妄想をするのが好き", axis: "SN", reverse: true },
+      { text: "計画を立てるよりその場のひらめきを大事にする", axis: "SN", reverse: true },
+      { text: "説明よりも実際に見たり体験したい", axis: "SN" },
+      { text: "物事を判断するとき感情より論理を優先する", axis: "TF" },
+      { text: "相手の気持ちをすぐに察することができる", axis: "TF", reverse: true },
+      { text: "対立よりも調和を優先したい", axis: "TF", reverse: true },
+      { text: "白黒はっきりつけたいタイプ", axis: "TF" },
+      { text: "予定はきっちり立てたい", axis: "JP" },
+      { text: "急な変更にもわりと柔軟に対応できる", axis: "JP", reverse: true },
+      { text: "締切が近くならないと本気が出ない", axis: "JP", reverse: true },
+      { text: "ToDoリストを使うのが好き", axis: "JP" }
+    ];
+
+    const axisScores = {
+      EI: 0,
+      SN: 0,
+      TF: 0,
+      JP: 0
+    };
+
+    const axisTypes = {
+      EI: ["I", "E"],
+      SN: ["N", "S"],
+      TF: ["F", "T"],
+      JP: ["P", "J"]
+    };
+
+    const results = {
+      ENFP: {
+        type: "社交的な理想家タイプ",
+        description: "感情豊かで自由な発想を持つあなたは、恋も人生も全力投球。人懐っこくてモテるけど、ちょっぴり飽きっぽい一面も。\n\nドラマチックな恋に憧れがち。勢いで始まって、気持ちの起伏も激しいタイプ。\n\n相手に夢を見すぎず、地に足のついた関係を育てていこう。あなたの情熱は、穏やかな人と一緒にいることでより輝きます。"
+      },
+      ISTJ: {
+        type: "実務家タイプ",
+        description: "まじめで誠実、言葉より行動で愛を示すタイプ。恋愛に浮ついた感覚はなく、じっくり関係を築くのが得意。\n\n恋は慎重派。信頼できる人と、穏やかな愛を育てたいと思っている。\n\nもっと感情を言葉で伝えるよう意識してみて。素直な「好き」が、関係を深める魔法になります。"
+      },
+      INFP: {
+        type: "理想主義タイプ",
+        description: "夢見がちでロマンチスト。深い愛を求めつつ、傷つくのが怖くて心の扉は少し重め。\n\n理想が高く、心のつながりを何より大切にする。浅い関係には興味なし。\n\n現実の恋にも小さな美しさはたくさんあるよ。勇気を出して、想いを外に出すことで、理想の人に近づけるはず。"
+      },
+      ESTP: {
+        type: "アクションタイプ",
+        description: "ノリがよくて行動的。気になる人がいたらすぐアプローチ！でも気分屋で恋が長続きしないことも。\n\n恋の始まりはスピーディー！けれど気持ちが冷めるのも早め。\n\n目の前の楽しさだけじゃなく、相手の心の深いところにもフォーカスしてみて。感情の絆を大切にできると、恋はもっと続くよ。"
+      },
+      INFJ: {
+        type: "静かな理想家タイプ",
+        description: "人の心の機微に敏感で、相手の気持ちをよく察するタイプ。恋にも誠実で、深い繋がりを求める。\n\n好きな人には献身的。でも感情を言葉にするのはちょっと苦手。\n\nもっと自分の気持ちも伝えてみて。あなたの優しさは、相手にとってかけがえのない安心になります。"
+      },
+      ESTJ: {
+        type: "リーダータイプ",
+        description: "責任感が強くて頼れる存在。恋愛にも真剣で、はっきりした関係を好む現実派。\n\nルールや常識を大事にするから、安定した関係を築きたいタイプ。主導権はつい握りがち。\n\n相手のペースや価値観も大切に。「こうあるべき」より「こうしたい」で恋がもっと柔らかくなります。"
+      },
+      ISFJ: {
+        type: "サポータータイプ",
+        description: "思いやりがあって気配り上手。恋人のためなら何でもしてあげたいタイプ。\n\n尽くしすぎて疲れちゃうことも。でも本当は甘えたい気持ちもあるよね。\n\n無理しすぎないで、自分の気持ちもちゃんと優先して。あなたの優しさは、そのままで十分魅力的です。"
+      },
+      ENTP: {
+        type: "冒険家タイプ",
+        description: "話し上手で頭の回転が早く、恋もトークも全力！変化や刺激のある関係に惹かれるタイプ。\n\n楽しい恋を追い求める自由人。だけどマンネリが苦手。\n\n一緒にワクワクできる相手を大事に。関係の「深さ」に目を向けると、もっと満たされる恋ができるかも。"
+      }
+    };
+
+    // 質問をレンダリング
+    const questionContainer = document.getElementById("questions");
+    const labels = ["そう思わない", "ややそう思わない", "どちらともいえない", "ややそう思う", "そう思う"];
+    questions.forEach((q, i) => {
+      const div = document.createElement("div");
+      div.className = "question";
+      div.innerHTML = ``
+        <p>${i + 1}. ${q.text}</p>
+        <div class="options">
+          ${labels.map((label, index) => `
+            <label><input type="radio" name="q${i}" value="${index + 1}" required> ${label}</label>
+          `).join('')}
+        </div>
+      `; 
+      
