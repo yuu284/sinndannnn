@@ -194,26 +194,34 @@
       document.querySelector("#progressBar div").style.width = progress + "%";
     };
 
-    // 診断ロジック
-    document.getElementById("quizForm").addEventListener("submit", function (e) {
-      e.preventDefault();
+  // 診断ロジック
+document.getElementById("quizForm").addEventListener("submit", function (e) {
+  e.preventDefault();
 
-      const score = { EI: 0, SN: 0, TF: 0, JP: 0 };
-      questions.forEach((q, i) => {
-        const val = parseInt(document.querySelector(`input[name=q${i}]:checked`).value);
-        const adjusted = q.reverse ? 6 - val : val;
-        score[q.axis] += adjusted;
-      });
+  const score = { EI: 0, SN: 0, TF: 0, JP: 0 };
 
-      let type = '';
-      const axisScores = Object.keys(score).map(axis => {
-        return score[axis] > 0 ? axisTypes[axis][0] : axisTypes[axis][1];
-      });
+  // スコア計算
+  questions.forEach((q, i) => {
+    const val = parseInt(document.querySelector(`input[name=q${i}]:checked`).value);
+    const adjusted = q.reverse ? 6 - val : val;
+    score[q.axis] += adjusted;
+  });
 
-      type = axisScores.join('');
+  // 軸ごとの平均スコアを求める
+  let resultType = '';
+  Object.keys(score).forEach(axis => {
+    const avg = score[axis] / 4;  // 4つの質問の平均を計算
+    resultType += avg >= 3 ? axisTypes[axis][1] : axisTypes[axis][0];  // 3以上なら後者、そうでなければ前者
+  });
 
-      document.getElementById("result").innerText = `${results[type].type}\n\n${results[type].description}`;
-    });
+  // 診断結果を表示
+  const result = results[resultType] || { type: "タイプ不明", description: "結果が見つかりませんでした。" };
+  document.getElementById("result").innerHTML = `
+    <h2>${result.type}</h2>
+    <p>${result.description.replace(/\n/g, '<br>')}</p>
+  `;
+});
+
   </script>
 </body>
 </html>
