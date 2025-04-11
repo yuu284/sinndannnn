@@ -31,15 +31,8 @@
       font-weight: bold;
       margin-bottom: 0.5rem;
     }
-    .options {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.25rem;
-    }
     .options label {
-      display: block;
-      margin-bottom: 0.25rem;
+      margin: 0 0.5rem;
     }
     button {
       margin-top: 2rem;
@@ -75,26 +68,22 @@
       { text: "1人の時間よりも誰かと一緒に過ごしたい", axis: "EI" },
       { text: "初対面の人とも気軽に話せる", axis: "EI" },
       { text: "予定がない日は誰かと遊ぶ予定を入れたくなる", axis: "EI" },
+
       { text: "事実やデータを重視する", axis: "SN" },
       { text: "空想や妄想をするのが好き", axis: "SN", reverse: true },
       { text: "計画を立てるよりその場のひらめきを大事にする", axis: "SN", reverse: true },
       { text: "説明よりも実際に見たり体験したい", axis: "SN" },
+
       { text: "物事を判断するとき感情より論理を優先する", axis: "TF" },
       { text: "相手の気持ちをすぐに察することができる", axis: "TF", reverse: true },
       { text: "対立よりも調和を優先したい", axis: "TF", reverse: true },
       { text: "白黒はっきりつけたいタイプ", axis: "TF" },
+
       { text: "予定はきっちり立てたい", axis: "JP" },
       { text: "急な変更にもわりと柔軟に対応できる", axis: "JP", reverse: true },
       { text: "締切が近くならないと本気が出ない", axis: "JP", reverse: true },
       { text: "ToDoリストを使うのが好き", axis: "JP" }
     ];
-
-    const axisTypes = {
-      EI: ["I", "E"],
-      SN: ["N", "S"],
-      TF: ["F", "T"],
-      JP: ["P", "J"]
-    };
 
     const results = {
       ENFP: {
@@ -131,62 +120,71 @@
       }
     };
 
-    const questionContainer = document.getElementById("questions");
-    const labels = ["そう思わない", "ややそう思わない", "どちらともいえない", "ややそう思う", "そう思う"];
+    const axisTypes = {
+      EI: ["I", "E"],
+      SN: ["N", "S"],
+      TF: ["F", "T"],
+      JP: ["P", "J"]
+    };
 
+    // 質問をレンダリング
+    const questionContainer = document.getElementById("questions");
     questions.forEach((q, i) => {
       const div = document.createElement("div");
       div.className = "question";
       div.innerHTML = `
         <p>${i + 1}. ${q.text}</p>
         <div class="options">
-          ${labels.map((label, idx) => `
-            <label><input type="radio" name="q${i}" value="${idx + 1}" required> ${label}</label>
-          `).join('')}
+          <label><input type="radio" name="q${i}" value="1" required> そう思わない</label>
+          <label><input type="radio" name="q${i}" value="2"> ややそう思わない</label>
+          <label><input type="radio" name="q${i}" value="3"> どちらともいえない</label>
+          <label><input type="radio" name="q${i}" value="4"> ややそう思う</label>
+          <label><input type="radio" name="q${i}" value="5"> そう思う</label>
         </div>
       `;
       questionContainer.appendChild(div);
     });
 
+    // 最も近いタイプを取得する関数
+    function getClosestType(typeCode) {
+      const validTypes = Object.keys(results);
+      let bestMatch = validTypes[0];
+      let maxMatch = 0;
+
+      validTypes.forEach(validType => {
+        let matchCount = 0;
+        for (let i = 0; i < 4; i++) {
+          if (typeCode[i] === validType[i]) matchCount++;
+        }
+        if (matchCount > maxMatch) {
+          maxMatch = matchCount;
+          bestMatch = validType;
+        }
+      });
+
+      return bestMatch;
+    }
+
+    // 診断ロジック
     document.getElementById("quizForm").addEventListener("submit", function (e) {
       e.preventDefault();
 
       const score = { EI: 0, SN: 0, TF: 0, JP: 0 };
-      const axisAverage = {};
-
       questions.forEach((q, i) => {
         const val = parseInt(document.querySelector(`input[name=q${i}]:checked`).value);
         const adjusted = q.reverse ? 6 - val : val;
         score[q.axis] += adjusted;
       });
 
+      let typeCode = '';
       Object.keys(score).forEach(axis => {
-        axisAverage[axis] = score[axis] / 4;
+        typeCode += score[axis] >= 0 ? axisTypes[axis][1] : axisTypes[axis][0];
       });
 
-      let resultType = "";
-      Object.keys(axisAverage).forEach(currentAxis => {
-        const avg = axisAverage[currentAxis];
-        if (avg > 3) {
-          resultType += axisTypes[currentAxis][1];
-        } else if (avg < 3) {
-          resultType += axisTypes[currentAxis][0];
-        } else {
-          let tendencyScore = 0;
-          Object.keys(axisAverage).forEach(otherAxis => {
-            if (otherAxis === currentAxis) return;
-            const otherAvg = axisAverage[otherAxis];
-            if (otherAvg > 3) tendencyScore += 1;
-            else if (otherAvg < 3) tendencyScore -= 1;
-          });
-          resultType += tendencyScore >= 0
-            ? axisTypes[currentAxis][1]
-            : axisTypes[currentAxis][0];
-        }
-      });
+      // typeCodeが存在しない場合、最も近いタイプを取得
+      const matchedType = results[typeCode] ? typeCode : getClosestType(typeCode);
 
-      const result = results[resultType] || { type: "タイプ不明", description: "結果が見つかりませんでした。" };
-
+      const result = results[matchedType];
       document.getElementById("result").innerHTML = `
         <h2>${result.type}</h2>
         <p>${result.description.replace(/\n/g, '<br>')}</p>
