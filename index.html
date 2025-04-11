@@ -3,192 +3,131 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>8タイプ診断</title>
+  <title>16タイプ診断</title>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
-      background: #fff5f8;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-    .container {
-      max-width: 600px;
-      margin: 2rem auto;
+      font-family: sans-serif;
       padding: 2rem;
-      background: #ffffff;
-      border-radius: 1.5rem;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 700px;
+      margin: auto;
     }
     h1 {
-      color: #ff66a5;
-      font-size: 2rem;
+      text-align: center;
     }
     .question {
-      margin: 1rem 0;
+      margin-bottom: 1.5rem;
     }
-    .question p {
-      font-weight: bold;
-      margin-bottom: 0.5rem;
-    }
-    .options label {
-      margin: 0 0.5rem;
-    }
-    button {
-      margin-top: 2rem;
-      padding: 0.75rem 1.5rem;
-      background-color: #ff66a5;
-      border: none;
-      border-radius: 1rem;
-      color: white;
-      font-size: 1rem;
-      cursor: pointer;
+    .answers label {
+      display: block;
+      margin-top: 0.3rem;
     }
     .result {
       margin-top: 2rem;
       padding: 1rem;
-      background-color: #ffe4ec;
-      border-radius: 1rem;
+      background: #f0f0f0;
+      border-radius: 8px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>8タイプ診断</h1>
-    <form id="quizForm">
-      <div id="questions"></div>
-      <button type="submit">診断する</button>
-    </form>
-    <div class="result" id="result"></div>
-  </div>
+  <h1>16タイプ診断</h1>
+  <form id="quizForm">
+    <div id="questionContainer"></div>
+    <button type="submit">診断する</button>
+  </form>
+  <div class="result" id="result"></div>
 
   <script>
     const questions = [
-      { text: "人と話すのが楽しい", axis: "EI" },
-      { text: "1人の時間よりも誰かと一緒に過ごしたい", axis: "EI" },
-      { text: "初対面の人とも気軽に話せる", axis: "EI" },
-      { text: "予定がない日は誰かと遊ぶ予定を入れたくなる", axis: "EI" },
-
-      { text: "事実やデータを重視する", axis: "SN" },
-      { text: "空想や妄想をするのが好き", axis: "SN", reverse: true },
-      { text: "計画を立てるよりその場のひらめきを大事にする", axis: "SN", reverse: true },
-      { text: "説明よりも実際に見たり体験したい", axis: "SN" },
-
-      { text: "物事を判断するとき感情より論理を優先する", axis: "TF" },
-      { text: "相手の気持ちをすぐに察することができる", axis: "TF", reverse: true },
-      { text: "対立よりも調和を優先したい", axis: "TF", reverse: true },
-      { text: "白黒はっきりつけたいタイプ", axis: "TF" },
-
-      { text: "予定はきっちり立てたい", axis: "JP" },
-      { text: "急な変更にもわりと柔軟に対応できる", axis: "JP", reverse: true },
-      { text: "締切が近くならないと本気が出ない", axis: "JP", reverse: true },
-      { text: "ToDoリストを使うのが好き", axis: "JP" }
+      { text: "大人数より少人数で過ごす方が好き", axis: "EI", reverse: true },
+      { text: "自分から会話を始めることが多い", axis: "EI", reverse: false },
+      { text: "現実的な話より空想的な話が好き", axis: "SN", reverse: false },
+      { text: "五感より直感で物事を捉えることが多い", axis: "SN", reverse: false },
+      { text: "感情より論理を優先する", axis: "TF", reverse: false },
+      { text: "相手の気持ちより正しさを大切にする", axis: "TF", reverse: false },
+      { text: "計画通りに進めるのが好き", axis: "JP", reverse: false },
+      { text: "締切よりも柔軟性を大切にする", axis: "JP", reverse: true },
+      { text: "初対面でもすぐ打ち解ける", axis: "EI", reverse: false },
+      { text: "小さな変化にも敏感に気づく", axis: "SN", reverse: true },
+      { text: "人の気持ちに深く共感しやすい", axis: "TF", reverse: true },
+      { text: "その場の流れに任せる方がうまくいくと感じる", axis: "JP", reverse: true },
+      { text: "ひらめきで物事を始めることが多い", axis: "SN", reverse: false },
+      { text: "相手を気遣う行動を自然に取れる", axis: "TF", reverse: true },
+      { text: "スケジュールを立てて行動したい", axis: "JP", reverse: false },
+      { text: "一人で過ごす時間が好き", axis: "EI", reverse: true }
     ];
 
-    const results = {
-      ENFP: {
-        type: "社交的な理想家タイプ",
-        description: "感情豊かで自由な発想を持つあなたは、恋も人生も全力投球。人懐っこくてモテるけど、ちょっぴり飽きっぽい一面も。\n\nドラマチックな恋に憧れがち。勢いで始まって、気持ちの起伏も激しいタイプ。\n\n相手に夢を見すぎず、地に足のついた関係を育てていこう。あなたの情熱は、穏やかな人と一緒にいることでより輝きます。"
-      },
-      ISTJ: {
-        type: "実務家タイプ",
-        description: "まじめで誠実、言葉より行動で愛を示すタイプ。恋愛に浮ついた感覚はなく、じっくり関係を築くのが得意。\n\n恋は慎重派。信頼できる人と、穏やかな愛を育てたいと思っている。\n\nもっと感情を言葉で伝えるよう意識してみて。素直な「好き」が、関係を深める魔法になります。"
-      },
-      INFP: {
-        type: "理想主義タイプ",
-        description: "夢見がちでロマンチスト。深い愛を求めつつ、傷つくのが怖くて心の扉は少し重め。\n\n理想が高く、心のつながりを何より大切にする。浅い関係には興味なし。\n\n現実の恋にも小さな美しさはたくさんあるよ。勇気を出して、想いを外に出すことで、理想の人に近づけるはず。"
-      },
-      ESTP: {
-        type: "アクションタイプ",
-        description: "ノリがよくて行動的。気になる人がいたらすぐアプローチ！でも気分屋で恋が長続きしないことも。\n\n恋の始まりはスピーディー！けれど気持ちが冷めるのも早め。\n\n目の前の楽しさだけじゃなく、相手の心の深いところにもフォーカスしてみて。感情の絆を大切にできると、恋はもっと続くよ。"
-      },
-      INFJ: {
-        type: "静かな理想家タイプ",
-        description: "人の心の機微に敏感で、相手の気持ちをよく察するタイプ。恋にも誠実で、深い繋がりを求める。\n\n好きな人には献身的。でも感情を言葉にするのはちょっと苦手。\n\nもっと自分の気持ちも伝えてみて。あなたの優しさは、相手にとってかけがえのない安心になります。"
-      },
-      ESTJ: {
-        type: "リーダータイプ",
-        description: "責任感が強くて頼れる存在。恋愛にも真剣で、はっきりした関係を好む現実派。\n\nルールや常識を大事にするから、安定した関係を築きたいタイプ。主導権はつい握りがち。\n\n相手のペースや価値観も大切に。「こうあるべき」より「こうしたい」で恋がもっと柔らかくなります。"
-      },
-      ISFJ: {
-        type: "サポータータイプ",
-        description: "思いやりがあって気配り上手。恋人のためなら何でもしてあげたいタイプ。\n\n尽くしすぎて疲れちゃうことも。でも本当は甘えたい気持ちもあるよね。\n\n無理しすぎないで、自分の気持ちもちゃんと優先して。あなたの優しさは、そのままで十分魅力的です。"
-      },
-      ENTP: {
-        type: "冒険家タイプ",
-        description: "話し上手で頭の回転が早く、恋もトークも全力！変化や刺激のある関係に惹かれるタイプ。\n\n楽しい恋を追い求める自由人。だけどマンネリが苦手。\n\n一緒にワクワクできる相手を大事に。関係の「深さ」に目を向けると、もっと満たされる恋ができるかも。"
-      }
-    };
-
     const axisTypes = {
-      EI: ["I", "E"],
-      SN: ["N", "S"],
-      TF: ["F", "T"],
-      JP: ["P", "J"]
+      EI: ["E", "I"],
+      SN: ["S", "N"],
+      TF: ["T", "F"],
+      JP: ["J", "P"]
     };
 
-    // 質問をレンダリング
-    const questionContainer = document.getElementById("questions");
+    const results = {
+      ISTJ: { type: "責任感のある実務家", description: "真面目で几帳面な性格で、安定した関係を好みます。恋愛では誠実さを大切にし、相手を支える力があります。" },
+      ISFJ: { type: "思いやりのある守護者", description: "相手の気持ちに寄り添える優しさを持ちます。恋愛では献身的で、パートナーを第一に考えます。" },
+      INFJ: { type: "洞察力のある理想主義者", description: "深い思考と共感力を持つタイプ。恋愛では真剣で、精神的なつながりを重視します。" },
+      INTJ: { type: "戦略的な理想家", description: "目標志向で計画的。恋愛では独立性を保ちながらも、深いつながりを求めます。" },
+      ISTP: { type: "冷静な分析家", description: "柔軟で現実的な思考の持ち主。恋愛では距離感を大切にしながらも、相手に対する誠実さを忘れません。" },
+      ISFP: { type: "繊細な芸術家", description: "感受性豊かで穏やかなタイプ。恋愛では静かな優しさでパートナーを癒します。" },
+      INFP: { type: "情熱的な理想主義者", description: "自分の価値観を大切にするロマンチスト。恋愛では深い絆を求め、相手を大切にします。" },
+      INTP: { type: "論理的な探求者", description: "独創的で知的好奇心が旺盛。恋愛では知的な刺激を大切にし、自由な関係を好みます。" },
+      ESTP: { type: "行動派の冒険家", description: "エネルギッシュで即断即決。恋愛では積極的で楽しい関係を築きます。" },
+      ESFP: { type: "陽気なエンターテイナー", description: "明るく社交的。恋愛では感情豊かで、愛情表現が得意です。" },
+      ENFP: { type: "情熱的なアイディアマン", description: "好奇心旺盛で創造的。恋愛では刺激と共感のある関係を望みます。" },
+      ENTP: { type: "自由な挑戦者", description: "アイデアにあふれた話し好き。恋愛では飽きのこない関係を築きます。" },
+      ESTJ: { type: "頼れるリーダー", description: "現実的で責任感が強く、恋愛でもリードする存在。安定した関係を築きます。" },
+      ESFJ: { type: "世話好きな協調者", description: "人間関係を大切にし、恋愛では献身的で思いやりのあるパートナーになります。" },
+      ENFJ: { type: "情熱的な指導者", description: "共感力が高く、恋愛では相手を大切にしながら愛情深くサポートします。" },
+      ENTJ: { type: "戦略的な指導者", description: "目標に向かって行動する力強さ。恋愛では自立した関係を望みます。" }
+    };
+
+    const container = document.getElementById("questionContainer");
     questions.forEach((q, i) => {
       const div = document.createElement("div");
       div.className = "question";
       div.innerHTML = `
         <p>${i + 1}. ${q.text}</p>
-        <div class="options">
-          <label><input type="radio" name="q${i}" value="1" required> そう思わない</label>
+        <div class="answers">
+          <label><input type="radio" name="q${i}" value="1"> そう思わない</label>
           <label><input type="radio" name="q${i}" value="2"> ややそう思わない</label>
           <label><input type="radio" name="q${i}" value="3"> どちらともいえない</label>
           <label><input type="radio" name="q${i}" value="4"> ややそう思う</label>
           <label><input type="radio" name="q${i}" value="5"> そう思う</label>
         </div>
       `;
-      questionContainer.appendChild(div);
+      container.appendChild(div);
     });
 
-    // 最も近いタイプを取得する関数
-    function getClosestType(typeCode) {
-      const validTypes = Object.keys(results);
-      let bestMatch = validTypes[0];
-      let maxMatch = 0;
-
-      validTypes.forEach(validType => {
-        let matchCount = 0;
-        for (let i = 0; i < 4; i++) {
-          if (typeCode[i] === validType[i]) matchCount++;
-        }
-        if (matchCount > maxMatch) {
-          maxMatch = matchCount;
-          bestMatch = validType;
-        }
-      });
-
-      return bestMatch;
-    }
-
-    // 診断ロジック
     document.getElementById("quizForm").addEventListener("submit", function (e) {
       e.preventDefault();
-
       const score = { EI: 0, SN: 0, TF: 0, JP: 0 };
+      const max = { EI: 0, SN: 0, TF: 0, JP: 0 };
+
       questions.forEach((q, i) => {
-        const val = parseInt(document.querySelector(`input[name=q${i}]:checked`).value);
+        const selected = document.querySelector(`input[name=q${i}]:checked`);
+        if (!selected) return;
+        const val = parseInt(selected.value);
         const adjusted = q.reverse ? 6 - val : val;
         score[q.axis] += adjusted;
+        max[q.axis] += 5;
       });
 
-      let typeCode = '';
-      Object.keys(score).forEach(axis => {
-        typeCode += score[axis] >= 0 ? axisTypes[axis][1] : axisTypes[axis][0];
-      });
+      let type = "";
+      for (const axis in score) {
+        const avg = score[axis] / (max[axis] / 5);
+        if (avg > 3) type += axisTypes[axis][0];
+        else if (avg < 3) type += axisTypes[axis][1];
+        else type += axisTypes[axis][0];
+      }
 
-      // typeCodeが存在しない場合、最も近いタイプを取得
-      const matchedType = results[typeCode] ? typeCode : getClosestType(typeCode);
-
-      const result = results[matchedType];
-      document.getElementById("result").innerHTML = `
-        <h2>${result.type}</h2>
-        <p>${result.description.replace(/\n/g, '<br>')}</p>
-      `;
+      const result = results[type];
+      if (result) {
+        document.getElementById("result").innerText = `${result.type}\n\n${result.description}`;
+      } else {
+        document.getElementById("result").innerText = `タイプ未定義（${type}）`;
+      }
     });
   </script>
 </body>
