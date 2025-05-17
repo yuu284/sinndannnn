@@ -1,133 +1,99 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>16タイプ診断</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>6タイプ性格診断</title>
   <style>
-    body {
-      font-family: sans-serif;
-      padding: 2rem;
-      max-width: 700px;
-      margin: auto;
-    }
-    h1 {
-      text-align: center;
-    }
-    .question {
-      margin-bottom: 1.5rem;
-    }
-    .answers label {
-      display: block;
-      margin-top: 0.3rem;
-    }
-    .result {
-      margin-top: 2rem;
-      padding: 1rem;
-      background: #f0f0f0;
-      border-radius: 8px;
-    }
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .question { margin-bottom: 20px; }
+    .result { font-size: 1.2em; margin-top: 30px; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h1>16タイプ診断</h1>
+  <h1>6タイプ性格診断</h1>
   <form id="quizForm">
-    <div id="questionContainer"></div>
+    <div class="question">
+      1. 人の気持ちを察するのが得意だと感じる
+      <input type="range" name="q1" min="1" max="5" value="3">
+    </div>
+    <div class="question">
+      2. 恋愛にはロマンを求める方だ
+      <input type="range" name="q2" min="1" max="5" value="3">
+    </div>
+    <div class="question">
+      3. 落ち着いていて、冷静な判断ができる方だ
+      <input type="range" name="q3" min="1" max="5" value="3">
+    </div>
+    <div class="question">
+      4. 行動力があり、じっとしているのが苦手だ
+      <input type="range" name="q4" min="1" max="5" value="3">
+    </div>
+    <div class="question">
+      5. 自分なりの世界観を持っていると言われる
+      <input type="range" name="q5" min="1" max="5" value="3">
+    </div>
+    <div class="question">
+      6. 自然と周囲を引っ張ることが多い
+      <input type="range" name="q6" min="1" max="5" value="3">
+    </div>
+    <div class="question">
+      7. 他人の話をよく聞くタイプだ
+      <input type="range" name="q7" min="1" max="5" value="3">
+    </div>
+    <div class="question">
+      8. 愛情表現はストレートにしたい
+      <input type="range" name="q8" min="1" max="5" value="3">
+    </div>
+    <div class="question">
+      9. 感情に流されにくく、理論的に考える
+      <input type="range" name="q9" min="1" max="5" value="3">
+    </div>
+    <div class="question">
+      10. チャレンジ精神がある
+      <input type="range" name="q10" min="1" max="5" value="3">
+    </div>
     <button type="submit">診断する</button>
   </form>
+
   <div class="result" id="result"></div>
 
   <script>
-    const questions = [
-      { text: "大人数より少人数で過ごす方が好き", axis: "EI", reverse: true },
-      { text: "自分から会話を始めることが多い", axis: "EI", reverse: false },
-      { text: "現実的な話より空想的な話が好き", axis: "SN", reverse: false },
-      { text: "五感より直感で物事を捉えることが多い", axis: "SN", reverse: false },
-      { text: "感情より論理を優先する", axis: "TF", reverse: false },
-      { text: "相手の気持ちより正しさを大切にする", axis: "TF", reverse: false },
-      { text: "計画通りに進めるのが好き", axis: "JP", reverse: false },
-      { text: "締切よりも柔軟性を大切にする", axis: "JP", reverse: true },
-      { text: "初対面でもすぐ打ち解ける", axis: "EI", reverse: false },
-      { text: "小さな変化にも敏感に気づく", axis: "SN", reverse: true },
-      { text: "人の気持ちに深く共感しやすい", axis: "TF", reverse: true },
-      { text: "その場の流れに任せる方がうまくいくと感じる", axis: "JP", reverse: true },
-      { text: "ひらめきで物事を始めることが多い", axis: "SN", reverse: false },
-      { text: "相手を気遣う行動を自然に取れる", axis: "TF", reverse: true },
-      { text: "スケジュールを立てて行動したい", axis: "JP", reverse: false },
-      { text: "一人で過ごす時間が好き", axis: "EI", reverse: true }
-    ];
+    document.getElementById("quizForm").addEventListener("submit", function(event) {
+      event.preventDefault();
 
-    const axisTypes = {
-      EI: ["E", "I"],
-      SN: ["S", "N"],
-      TF: ["T", "F"],
-      JP: ["J", "P"]
-    };
+      const data = new FormData(event.target);
+      let scores = {
+        partner: 0,
+        romantic: 0,
+        cool: 0,
+        active: 0,
+        creative: 0,
+        leader: 0
+      };
 
-    const results = {
-      ISTJ: { type: "責任感のある実務家", description: "真面目で几帳面な性格で、安定した関係を好みます。恋愛では誠実さを大切にし、相手を支える力があります。" },
-      ISFJ: { type: "思いやりのある守護者", description: "相手の気持ちに寄り添える優しさを持ちます。恋愛では献身的で、パートナーを第一に考えます。" },
-      INFJ: { type: "洞察力のある理想主義者", description: "深い思考と共感力を持つタイプ。恋愛では真剣で、精神的なつながりを重視します。" },
-      INTJ: { type: "戦略的な理想家", description: "目標志向で計画的。恋愛では独立性を保ちながらも、深いつながりを求めます。" },
-      ISTP: { type: "冷静な分析家", description: "柔軟で現実的な思考の持ち主。恋愛では距離感を大切にしながらも、相手に対する誠実さを忘れません。" },
-      ISFP: { type: "繊細な芸術家", description: "感受性豊かで穏やかなタイプ。恋愛では静かな優しさでパートナーを癒します。" },
-      INFP: { type: "情熱的な理想主義者", description: "自分の価値観を大切にするロマンチスト。恋愛では深い絆を求め、相手を大切にします。" },
-      INTP: { type: "論理的な探求者", description: "独創的で知的好奇心が旺盛。恋愛では知的な刺激を大切にし、自由な関係を好みます。" },
-      ESTP: { type: "行動派の冒険家", description: "エネルギッシュで即断即決。恋愛では積極的で楽しい関係を築きます。" },
-      ESFP: { type: "陽気なエンターテイナー", description: "明るく社交的。恋愛では感情豊かで、愛情表現が得意です。" },
-      ENFP: { type: "情熱的なアイディアマン", description: "好奇心旺盛で創造的。恋愛では刺激と共感のある関係を望みます。" },
-      ENTP: { type: "自由な挑戦者", description: "アイデアにあふれた話し好き。恋愛では飽きのこない関係を築きます。" },
-      ESTJ: { type: "頼れるリーダー", description: "現実的で責任感が強く、恋愛でもリードする存在。安定した関係を築きます。" },
-      ESFJ: { type: "世話好きな協調者", description: "人間関係を大切にし、恋愛では献身的で思いやりのあるパートナーになります。" },
-      ENFJ: { type: "情熱的な指導者", description: "共感力が高く、恋愛では相手を大切にしながら愛情深くサポートします。" },
-      ENTJ: { type: "戦略的な指導者", description: "目標に向かって行動する力強さ。恋愛では自立した関係を望みます。" }
-    };
+      scores.partner += parseInt(data.get("q1")) + parseInt(data.get("q7"));
+      scores.romantic += parseInt(data.get("q2")) + parseInt(data.get("q8"));
+      scores.cool += parseInt(data.get("q3")) + parseInt(data.get("q9"));
+      scores.active += parseInt(data.get("q4")) + parseInt(data.get("q10"));
+      scores.creative += parseInt(data.get("q5"));
+      scores.leader += parseInt(data.get("q6"));
 
-    const container = document.getElementById("questionContainer");
-    questions.forEach((q, i) => {
-      const div = document.createElement("div");
-      div.className = "question";
-      div.innerHTML = `
-        <p>${i + 1}. ${q.text}</p>
-        <div class="answers">
-          <label><input type="radio" name="q${i}" value="1"> そう思わない</label>
-          <label><input type="radio" name="q${i}" value="2"> ややそう思わない</label>
-          <label><input type="radio" name="q${i}" value="3"> どちらともいえない</label>
-          <label><input type="radio" name="q${i}" value="4"> ややそう思う</label>
-          <label><input type="radio" name="q${i}" value="5"> そう思う</label>
-        </div>
-      `;
-      container.appendChild(div);
-    });
+      const typeNames = {
+        partner: "パートナー型",
+        romantic: "ロマンチック型",
+        cool: "クールパートナー型",
+        active: "アクティブ型",
+        creative: "クリエイティブ型",
+        leader: "リーダー型"
+      };
 
-    document.getElementById("quizForm").addEventListener("submit", function (e) {
-      e.preventDefault();
-      const score = { EI: 0, SN: 0, TF: 0, JP: 0 };
-      const max = { EI: 0, SN: 0, TF: 0, JP: 0 };
+      // 最大スコアを持つタイプを取得（同点処理含む）
+      let maxScore = Math.max(...Object.values(scores));
+      let topTypes = Object.keys(scores).filter(type => scores[type] === maxScore);
+      let resultType = topTypes.sort()[0]; // 同点時はアルファベット順で安定
 
-      questions.forEach((q, i) => {
-        const selected = document.querySelector(`input[name=q${i}]:checked`);
-        if (!selected) return;
-        const val = parseInt(selected.value);
-        const adjusted = q.reverse ? 6 - val : val;
-        score[q.axis] += adjusted;
-        max[q.axis] += 5;
-      });
-
-      let type = "";
-      for (const axis in score) {
-        const avg = score[axis] / (max[axis] / 5);
-        if (avg > 3) type += axisTypes[axis][0];
-        else if (avg < 3) type += axisTypes[axis][1];
-        else type += axisTypes[axis][0];
-      }
-
-      const result = results[type];
-      if (result) {
-        document.getElementById("result").innerText = `${result.type}\n\n${result.description}`;
-      } else {
-        document.getElementById("result").innerText = `タイプ未定義（${type}）`;
-      }
+      document.getElementById("result").textContent = `あなたのタイプは「${typeNames[resultType]}」です！`;
     });
   </script>
 </body>
